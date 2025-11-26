@@ -1,14 +1,34 @@
+<?php
+session_start();
+
+// DATABASE CONNECTION
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "floraguide"; // change to your DB name
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Database Connection Failed: " . $conn->connect_error);
+}
+
+// HANDLE PLANT SELECTION
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['plant_id'])) {
+    $_SESSION['selected_plant'] = $_POST['plant_id'];
+    header("Location: individualPlant.php");
+    exit();
+}
+
+// GET PLANTS FROM DATABASE
+$sql = "SELECT id, plant_name, image_path FROM plants";
+$result = $conn->query($sql);
+?>
 <!DOCTYPE html>
 <html>
 
 <head>
-    <!--
-        Author: Nadia Mohamed (U21101739)
-        Date: 06/11/2024  
-
-        Filename:          Ficus lyrata.html
-        Supporting files: 
-    -->
     <meta charset="UTF-8" />
     <title>Plants Care Guides Directory</title>
     <link rel="stylesheet" type="text/css" href="directory.css">
@@ -18,7 +38,7 @@
     <nav class="linksbar">
         <ul>
             <li><a href="../index.html">Home Page</a></li>
-            <li><a href="../mainPages/directory.html">Plants Directory</a></li>
+            <li><a href="directory.php">Plants Directory</a></li>
             <li><a href="../mainPages/plantspace.html">My Plant Space</a></li>
             <li><a href="../mainPages/reminders.html">Plant Reminders</a></li>
             <li><a href="../mainPages/about.html">About Us</a></li>
@@ -29,175 +49,44 @@
     </nav>
 
     <div class="content">
-        <!-- Search bar -->
-        <!-- Search functionality does not work yet as it requires javascript-->
+
+        <!-- Search bar (unchanged) -->
         <div class="form">
-                <p>
-                    <label for="plantSearch">
-                        <h3>Try Looking up your Plant:</h3>
-                        <input type="search" id="plantSearch" placeholder="type or search the plant name" size="50"
-                            list="plants">
-                        <br>
-                        <datalist id="plants">
-                            <option value="Aloe Vera (Aloe barbadensis)"></option>
-                            <option value="Flamingo Flower (Anthurium andraeanum)"></option>
-                            <option value="Areca Palm (Dypsis lutescens)"></option>
-                            <option value="Bird's Nest Fern (Asplenium nidus)"></option>
-                            <option value="Boston Fern (Nephrolepis exaltata)"></option>
-                            <option value="Calathea (Calathea spp.)"></option>
-                            <option value="Cast Iron Plant (Aspidistra elatior)"></option>
-                            <option value="Chinese Evergreen (Aglaonema)"></option>
-                            <option value="Chinese Money Plant (Pilea peperomioides)"></option>
-                            <option value="Croton (Codiaeum variegatum)"></option>
-                            <option value="Dumb Cane (Dieffenbachia spp.)"></option>
-                            <option value="Dracaena (Dracaena spp.)"></option>
-                            <option value="English Ivy (Hedera helix)"></option>
-                            <option value="Fiddle Leaf Fig (Ficus lyrata)"></option>
-                            <option value="Jade Plant (Crassula ovata)"></option>
-                            <option value="Maidenhair Fern (Adiantum)"></option>
-                            <option value="Monstera (Monstera deliciosa)"></option>
-                            <option value="Parlor Palm (Chamaedorea elegans)"></option>
-                            <option value="Peace Lily (Spathiphyllum)"></option>
-                            <option value="Peperomia (Peperomia spp.)"></option>
-                            <option value="Philodendron (Philodendron hederaceum)"></option>
-                            <option value="Ponytail Palm (Beaucarnea recurvata)"></option>
-                            <option value="Pothos (Epipremnum aureum)"></option>
-                            <option value="Prayer Plant (Maranta leuconeura)"></option>
-                            <option value="Rubber Plant (Ficus elastica)"></option>
-                            <option value="Snake Plant (Sansevieria trifasciata)"></option>
-                            <option value="Spider Plant (Chlorophytum comosum)"></option>
-                            <option value="String of Pearls (Senecio rowleyanus)"></option>
-                            <option value="Swiss Cheese Plant (Monstera adansonii)"></option>
-                            <option value="ZZ Plant (Zamioculcas zamiifolia)"></option>
-                        </datalist>
-                    </label>
-                </p>
-                <p>
-                    <button type="submit" id="search">Search</button>
-                </p>
+            <p>
+                <label for="plantSearch">
+                    <h3>Try Looking up your Plant:</h3>
+                    <input type="search" id="plantSearch" placeholder="type or search the plant name" size="50" list="plants">
+                </label>
+            </p>
+            <p><button type="submit" id="search">Search</button></p>
         </div>
 
-        <!-- Plant Directory List -->
+        <!-- DYNAMIC PLANT DIRECTORY -->
         <ul class="plant-list" id="plantList">
-            <li>
-                <a href="../plantsDirectory/AloeVera.html">
-                    <img src="../Images/plants/AloeVera.jpg" alt="Aloe Vera Icon">Aloe Vera (Aloe barbadensis)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Anthurium.html">
-                    <img src="../Images/plants/Anthrium.jpg" alt="Anthurium Icon">Flamingo Flower (Anthurium andraeanum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/ArecaPalm.html">
-                    <img src="../Images/plants/Areca.jpg" alt="Areca Palm Icon">Areca Palm (Dypsis lutescens)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/AspleniumNidus.html">
-                    <img src="../Images/plants/Asplenium.jpg" alt="Bird's Nest Fern Icon">Bird's Nest Fern (Asplenium nidus)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/NephrolepisExaltata.html">
-                    <img src="../Images/plants/Fern.jpg" alt="Boston Fern Icon">Boston Fern (Nephrolepis exaltata)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/CalatheaSpp.html">
-                    <img src="../Images/plants/Calathea.jpg" alt="Calathea Icon">Calathea (Calathea spp.)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/CastIronPlant.html">
-                    <img src="../Images/plants/CastIronPlant.jpg" alt="Cast Iron Plant Icon">Cast Iron Plant (Aspidistra elatior)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/ChineseEvergreen.html">
-                    <img src="../Images/plants/Chinese.jpg" alt="Chinese Evergreen Icon">Chinese Evergreen (Aglaonema)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/PileaPeperomioides.html">
-                    <img src="../Images/plants/ChineseMoneyPlant.jpg" alt="Chinese Money Plant Icon">Chinese Money Plant (Pilea peperomioides)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Croton.html">
-                    <img src="../Images/plants/Croton.jpg" alt="Croton Icon">Croton (Codiaeum variegatum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Dieffenbachia.html">
-                    <img src="../Images/plants/Dieffenbachia.jpg" alt="Dieffenbachia Icon">Dumb Cane (Dieffenbachia spp.)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Dracaena.html">
-                    <img src="../Images/plants/Dracaera.jpg" alt="Dracaena Icon">Dracaena (Dracaena spp.)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/EnglishIvy.html">
-                    <img src="../Images/plants/EnglishIvy.jpg" alt="English Ivy Icon">English Ivy (Hedera helix)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/FicusLyrata.html">
-                    <img src="../Images/plants/FiddleLeafFigLeaves.jpg" alt="Fiddle Leaf Fig Icon">Fiddle Leaf Fig (Ficus lyrata)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Jade.html">
-                    <img src="../Images/plants/Jade.jpg" alt="Jade Plant Icon">Jade Plant (Crassula ovata)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Maidenhair.html">
-                    <img src="../Images/plants/Maidenhair.jpg" alt="Maidenhair Fern Icon">Maidenhair Fern (Adiantum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/MonsteraDeliciosa.html">
-                    <img src="../Images/plants/Monstera.jpg" alt="Monstera Icon">Monstera (Monstera deliciosa)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/ParlorPalm.html">
-                    <img src="../Images/plants/ParlorPalm.jpg" alt="Parlor Palm Icon">Parlor Palm (Chamaedorea elegans)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Spathiphyllum.html">
-                    <img src="../Images/plants/Spathiphyllum.jpg" alt="Peace Lily Icon">Peace Lily (Spathiphyllum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Peperomia.html">
-                    <img src="../Images/plants/Peperomia.jpg" alt="Peperomia Icon">Peperomia (Peperomia spp.)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Philodendron.html">
-                    <img src="../Images/plants/Philoden.jpg" alt="Philodendron Icon">Philodendron (Philodendron hederaceum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/PonytailPalm.html">
-                    <img src="../Images/plants/Ponytail.jpg" alt="Ponytail Palm Icon">Ponytail Palm (Beaucarnea recurvata)</a>
-            </li>
-            <li><a href="../plantsDirectory/Pothos.html">
-                    <img src="../Images/plants/Pothos.jpg" alt="Pothos Icon">Pothos (Epipremnum aureum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/PrayerPlant.html">
-                    <img src="../Images/plants/Prayer.jpg" alt="Prayer Plant Icon">Prayer Plant (Maranta leuconeura)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Rubber.html">
-                    <img src="../Images/plants/Rubber.jpeg" alt="Rubber Plant Icon">Rubber Plant (Ficus elastica)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Snake.html">
-                    <img src="../Images/plants/Snake.jpg" alt="Snake Plant Icon">Snake Plant (Sansevieria trifasciata)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Spider.html">
-                    <img src="../Images/plants/Spider.jpg" alt="Spider Plant Icon">Spider Plant (Chlorophytum comosum)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/Pearls.html">
-                    <img src="../Images/plants/Pearls.jpg" alt="String of Pearls Icon">String of Pearls (Senecio rowleyanus)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/SwissCheesePlant.html">
-                    <img src="../Images/plants/SwissCheesePlant.jpg" alt="Swiss Cheese Plant Icon">Swiss Cheese Plant (Monstera adansonii)</a>
-            </li>
-            <li>
-                <a href="../plantsDirectory/ZZplant.html">
-                    <img src="../Images/plants/ZZplant.jpg" alt="ZZ Plant Icon">ZZ Plant (Zamioculcas zamiifolia)</a>
-            </li>
+
+            <?php
+            // FOR LOOP (chapter 8 requirement)
+            // Echo HTML dynamically into grid
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+
+                    // Each plant block contains its DB ID (requirement)
+                    echo '
+                    <li>
+                        <form method="POST" action="">
+                            <input type="hidden" name="plant_id" value="' . $row['id'] . '">
+                            <button type="submit" class="plantBtn" style="all: unset; cursor: pointer;">
+                                <img src="' . $row['image_path'] . '" alt="Plant Image">
+                                ' . $row['plant_name'] . '
+                            </button>
+                        </form>
+                    </li>';
+                }
+            } else {
+                echo "<p>No plants found in database.</p>";
+            }
+            ?>
+
         </ul>
     </div>
 
@@ -213,7 +102,7 @@
             Nadia Mohamed - U21101739
         </p>
     </footer>
-    <script src="SearchFilter.js"></script>
+
 </body>
 
 </html>
